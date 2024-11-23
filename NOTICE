@@ -11,6 +11,6 @@ Modifications:
 - Eigenvoid, 2024.
   - Renamed variables to better reflect their purpose and improve code readability.
   - Explicitly defined access keys for enhanced clarity.
-  - Refined exception messages for greater clarity and technical accuracy
+  - Refined exception messages for greater clarity and technical accuracy.
   - Introduced a validation check for cases where the raw payload length is insufficient.
   - Implemented functionality to allow direct input of encrypted data and branch, eliminating the need for hardcoded values within the file.
