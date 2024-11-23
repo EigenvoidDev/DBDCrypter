@@ -22,7 +22,7 @@ You will be prompted to enter the encrypted data. After submitting it and pressi
 
 ## Updating Access Keys
 
-Please note that when a new Dead by Daylight update is released, access keys for the different game branches (QA, Stage, Cert, PTB, Live) may change. You will need to manually update the access keys in the script to reflect the new game version. To update the access keys in the script, follow these steps:
+Please note that when a new Dead by Daylight update is released, access keys for the different game branches may change. You will need to manually update the access keys in the script to reflect the new game version. To update the access keys in the script, follow these steps:
 
 1. Launch [FModel](https://github.com/4sval/FModel), select Dead by Daylight as your detected game, and provide the relevant mapping file and AES key. Then, load the game archives, navigate to the `DeadByDaylight` directory, and open `Config > DefaultGame.ini`.
 
