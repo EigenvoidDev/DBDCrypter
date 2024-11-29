@@ -25,21 +25,11 @@ class DBDDecryption:
     ZLIB_COMPRESSION_PREFIX = 'DbdDAQEB'
 
     ACCESS_KEYS = {
-        '8.3.0_qa': 'PMpWSDCacs4gxAsW5tIqRK6LdFXwYYIYYnPfevI1HQo=',
-        '8.3.0_stage': 'tlr7va/WqYlQF2Yp+KQN7KDLtsG/jg7OpxB/pUCtrQA=',
-        '8.3.0_cert': 'sQcyOnoA9/76i7I1Uv/9oXaxkjzMnI4Ec/hDsBSBIcA=',
-        '8.3.0_ptb': '/ecXuJvk9l38ffnkHalYfeEbumocDBK+DaUeYcIr82o=',
-        '8.3.0_live': 'fMYq7WF+cNspGeCujfjvuw0GxlpjsXwfhfsh6O2Xn9U=',
-        '8.3.1_qa': 'AbVcU5Nd+lQs6LPYfBS9RgwXbaDX5mTE0LdWjABOZ+U=',
-        '8.3.1_stage': '5MTApKAnan25Niya0Q4qGGC7B6lRLCx+eUS2bL3lT5c=',
-        '8.3.1_cert': '4qLPWefFSxIkAJ8LwEKZKa+vqJ/GY102qOOFG5CUgA0=',
-        '8.3.1_ptb': 'Krplg2UGkK+mWz179rwkJC/SqUCtj950NYP4yHgor0A=',
-        '8.3.1_live': '2X/5Q6mVLlhiAvfndcpQGtiq0Ff6YbQihw+rXDSG0HE=',
-        '8.3.2_qa': 'Q7togl29cDK8NzohvLOYZyfUwn9sDnFz2JzzAzM8lJk=',
-        '8.3.2_stage': 'PBcq6dBi5lwreqEPQFtO0uhg3zJ5Sy/mKzojoKOtURI=',
-        '8.3.2_cert': '6U8YeUkQAK/6SFU/apKdKWi4XQj6WpEYYr9oowegKns=',
-        '8.3.2_ptb': 'HMx8ZiDyWQlJ4xBUkmLyYxjuOIitwB72mEmXhpRGVEs=',
-        '8.3.2_live': 'Hqn3MOuoUmgV3tHEs+aGQ2h4okVd6VJeGnx7K+ltcGc=',
+        '8.4.0_qa': 'j8Ssf/OuLHB7MDEGZ+60+4/B4CEy8W0MFU5P/3DJcKA=',
+        '8.4.0_stage': 'UrzY3zeokKxZKwylD5S/MqJitOLp+sPf57GUqFQTro0=',
+        '8.4.0_cert': 'Hjf506fSULGcQrP1hAnYabBIBifbtkdKQkdAXR0WfjY=',
+        '8.4.0_ptb': 'ovwdqi85Q9L+yanB1XAZiTNiORsaqJnDLQ4lWKcxfB0=',
+        '8.4.0_live': '7ftAaDtpMQxZtApVJeiORnu9ZCY9WtOiGOoJquhqsDg='
     }
 
     @staticmethod
