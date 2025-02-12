@@ -1,4 +1,4 @@
-# Copyright 2024 Eigenvoid
+# Copyright 2025 Eigenvoid
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,11 +25,11 @@ class DBDDecryption:
     ZLIB_COMPRESSION_PREFIX = 'DbdDAQEB'
 
     ACCESS_KEYS = {
-        '8.4.0_qa': 'j8Ssf/OuLHB7MDEGZ+60+4/B4CEy8W0MFU5P/3DJcKA=',
-        '8.4.0_stage': 'UrzY3zeokKxZKwylD5S/MqJitOLp+sPf57GUqFQTro0=',
-        '8.4.0_cert': 'Hjf506fSULGcQrP1hAnYabBIBifbtkdKQkdAXR0WfjY=',
-        '8.4.0_ptb': 'ovwdqi85Q9L+yanB1XAZiTNiORsaqJnDLQ4lWKcxfB0=',
-        '8.4.0_live': '7ftAaDtpMQxZtApVJeiORnu9ZCY9WtOiGOoJquhqsDg='
+        '8.5.2_qa': 'vmaHSKX3Oes0x4jHV6+envqreNFtl+62zK0ss7L/5DQ=',
+        '8.5.2_stage': 'qGIMaVgBGYsRgXPdpTGbq9Pl8ZtKwNgMjO4VX2j9yMA=',
+        '8.5.2_cert': 'y+NL4TC0oUih+OKL2KmLh28gSZmNE60yfOvjwxqLaz0=',
+        '8.5.2_ptb': 'RIwud+m6vC8cy5RyjRSfJbNOlmJ5+QAE4vOB8n1B1mc=',
+        '8.5.2_live': 'kQOcZmTxqSDdCO3qcch3oWo6QMVyFtan6Rt6uNeuQJI='
     }
 
     @staticmethod
