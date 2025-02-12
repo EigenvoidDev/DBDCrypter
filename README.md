@@ -1,8 +1,8 @@
 # Dead By Daylight Content Delivery Network Decryptor
 
-[Dead by Daylight](https://deadbydaylight.com/) is an asymmetrical horror game in which four resourceful survivors face off against one ruthless killer.
+[Dead by Daylight](https://deadbydaylight.com/) is an online asymmetric multiplayer survival horror video game developed and published by Canadian studio [Behaviour Interactive](https://www.bhvr.com/).
 
-**Dead by Daylight Content Delivery Network Decryptor** is a script designed to decrypt encrypted data transmitted through the Dead by Daylight content delivery network (CDN). Although the CDN only handles asset data, this script is also able to decrypt save profile data. It supports multiple game branches (QA, Stage, Cert, PTB, and Live), each with its own access key based on the game version. The script performs decryption using AES encryption and decompression via zlib when necessary.
+**Dead by Daylight Content Delivery Network Decryptor** is a script designed to decrypt encrypted data transmitted via the Dead by Daylight Content Delivery Network (CDN). Although the CDN exclusively handles asset data, this script can also decrypt save profile data. It supports multiple game branches, including QA, Stage, Cert, PTB, and Live, each with its own access key tailored to the specific game version. The decryption process utilizes AES encryption, and when necessary, data is decompressed using zlib.
 
 ## Requirements
 
