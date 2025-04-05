@@ -25,11 +25,11 @@ class DBDDecryption:
     ZLIB_COMPRESSION_PREFIX = 'DbdDAQEB'
 
     ACCESS_KEYS = {
-        '8.5.2_qa': 'vmaHSKX3Oes0x4jHV6+envqreNFtl+62zK0ss7L/5DQ=',
-        '8.5.2_stage': 'qGIMaVgBGYsRgXPdpTGbq9Pl8ZtKwNgMjO4VX2j9yMA=',
-        '8.5.2_cert': 'y+NL4TC0oUih+OKL2KmLh28gSZmNE60yfOvjwxqLaz0=',
-        '8.5.2_ptb': 'RIwud+m6vC8cy5RyjRSfJbNOlmJ5+QAE4vOB8n1B1mc=',
-        '8.5.2_live': 'kQOcZmTxqSDdCO3qcch3oWo6QMVyFtan6Rt6uNeuQJI='
+        '8.6.0_qa': 'z+7RlyzFUrUCj5u7YA89T5ub+5akepTzteHToUsYc4A=',
+        '8.6.0_stage': 'LiHcYuAq050ATvz/Y0lgc5DceCwD2aVy5P0U0thQ+IA=',
+        '8.6.0_cert': 'UoCKoCiOgh5NADmSn9ZhEIWZOV7sf+yFtHpmYgSX99w=',
+        '8.6.0_ptb': 'x1QMnN/SwyScEfJGD+IaV4MLnDw1TZsvA1s+SMuglLQ=',
+        '8.6.0_live': 'vTRvDJhWgR7dGgTpwddnnL1aWgPBmyzjjwE9owN/qHU='
     }
 
     @staticmethod
