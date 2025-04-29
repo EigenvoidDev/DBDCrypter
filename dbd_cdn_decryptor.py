@@ -25,11 +25,11 @@ class DBDDecryption:
     ZLIB_COMPRESSION_PREFIX = 'DbdDAQEB'
 
     ACCESS_KEYS = {
-        '8.6.0_qa': 'z+7RlyzFUrUCj5u7YA89T5ub+5akepTzteHToUsYc4A=',
-        '8.6.0_stage': 'LiHcYuAq050ATvz/Y0lgc5DceCwD2aVy5P0U0thQ+IA=',
-        '8.6.0_cert': 'UoCKoCiOgh5NADmSn9ZhEIWZOV7sf+yFtHpmYgSX99w=',
-        '8.6.0_ptb': 'x1QMnN/SwyScEfJGD+IaV4MLnDw1TZsvA1s+SMuglLQ=',
-        '8.6.0_live': 'vTRvDJhWgR7dGgTpwddnnL1aWgPBmyzjjwE9owN/qHU='
+        '8.6.2_qa': 'FBjsHH05qQ8to0NXVvHIvlbxYTB0YcUeCLf6Gc8RW58=',
+        '8.6.2_stage': 'lzt/lPyES1S6s8j5i74u6c5BY4z8pft0dasp13UmRNQ=',
+        '8.6.2_cert': '/QONZ7cXpWlCu1t5KWJS89pu8EU25rAdrgfUh+yCCT8=',
+        '8.6.2_ptb': 'fbP+0wlynkL7DRNRwf0MjxbqXze8742sMnLq7QD2v3Q=',
+        '8.6.2_live': '3DM/mSQ5w8Ymb85jsW4gm5+R1qpcX8rBxBBQtPnhRBQ='
     }
 
     @staticmethod
@@ -133,7 +133,25 @@ class DBDDecryption:
         return DBDDecryption.decrypt_content(result_text, branch)
     
 if __name__ == '__main__':
-    encrypted_data = input('Enter the encrypted data: ')
+    while True:
+        loading_mode = input('Select a loading mode (1: Enter data directly, 2: Open from a file): ').lower()
+        
+        if loading_mode == "1":
+            encrypted_data = input('Enter the encrypted data: ')
+            break
+        elif loading_mode == "2":
+            try:
+                file = input('Enter path to encrypted data: ')
+                with open(file, "r", encoding="utf-8") as f:
+                    encrypted_data = f.read()
+                break
+            except FileNotFoundError:
+                print('File not found!')
+            except Exception as e:
+                print(f'Error: {e} trying to open the file')
+        else:
+            print('Invalid selection.')
+        
     branch_input = input('Select a branch (q: QA, s: Stage, c: Cert, p: PTB, l: Live): ').lower()
 
     branch_map = {
@@ -150,6 +168,14 @@ if __name__ == '__main__':
     else:
         try:
             decrypted_data = DBDDecryption.decrypt_content(encrypted_data, branch)
-            print(decrypted_data)
+            
+            try:
+                output_file = input('Enter output path for decrypted data: ')
+                with open(output_file, "w", encoding="utf-8") as f:
+                    f.write(decrypted_data)
+                    
+                print(f'Decrypted data was saved to file: {output_file}')
+            except Exception as e:
+                print('Error during saving:', e)
         except Exception as e:
             print('Error during decryption:', e)
