@@ -2,7 +2,7 @@
 
 [Dead by Daylight](https://deadbydaylight.com/) is an online asymmetric multiplayer survival horror video game developed and published by Canadian studio [Behaviour Interactive](https://www.bhvr.com/).
 
-**Dead by Daylight Content Delivery Network Decryptor** is a script designed to decrypt encrypted data transmitted via the Dead by Daylight Content Delivery Network (CDN). Although the CDN exclusively handles asset data, this script can also decrypt save profile data. It supports multiple game branches, including QA, Stage, Cert, PTB, and Live, each with its own access key tailored to the specific game version. The decryption process utilizes AES encryption, and when necessary, data is decompressed using zlib.
+**Dead by Daylight Content Delivery Network Decryptor** is a script that allows you to decrypt encrypted data from the Dead by Daylight Content Delivery Network (CDN). It supports multiple game branches (QA, Stage, Cert, PTB, and Live), each having its own unique access key for the decryption process.
 
 ## Requirements
 
@@ -18,7 +18,7 @@ To run this script, navigate to the directory containing the script and execute 
 python dbd_cdn_decryptor.py
 ```
 
-You will be prompted to enter the encrypted data. After submitting it and pressing "Enter," you will be asked to select a branch. Type the key for your chosen branch and press "Enter."
+You will be prompted to either enter the encrypted data manually or load it from a file. After doing so, you will be asked to select a branch. Type the key for your chosen branch and press "Enter."
 
 ## Updating Access Keys
 
