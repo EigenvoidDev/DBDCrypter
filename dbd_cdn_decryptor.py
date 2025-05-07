@@ -29,11 +29,11 @@ class DBDDecryption:
     ZLIB_COMPRESSION_PREFIX = "DbdDAQEB"
 
     ACCESS_KEYS = {
-        "8.6.2_qa": "FBjsHH05qQ8to0NXVvHIvlbxYTB0YcUeCLf6Gc8RW58=",
-        "8.6.2_stage": "lzt/lPyES1S6s8j5i74u6c5BY4z8pft0dasp13UmRNQ=",
-        "8.6.2_cert": "/QONZ7cXpWlCu1t5KWJS89pu8EU25rAdrgfUh+yCCT8=",
-        "8.6.2_ptb": "fbP+0wlynkL7DRNRwf0MjxbqXze8742sMnLq7QD2v3Q=",
-        "8.6.2_live": "3DM/mSQ5w8Ymb85jsW4gm5+R1qpcX8rBxBBQtPnhRBQ=",
+        "8.7.0_qa": "Dve6bTFAxA5AqrB1zCr7x9pfQ60gAflMo0GUzN4lE5w=",
+        "8.7.0_stage": "R0oSCK/diXGLeBxbO5Q+rsZEPQMTDLny6vms3MuSjjc=",
+        "8.7.0_cert": "12qJ84fv+venn0p7WTqKlxy3R8djjNFKV6M6ROZAk/I=",
+        "8.7.0_ptb": "50DRHA7vSn0N6eBkh9kzkmDBG+kYzcHKwacplIqnXkg=",
+        "8.7.0_live": "pLoYHm+5nJDbohTN6txfHo5bi92qJ1UT19cAzumsFlg=",
     }
 
     @staticmethod
@@ -184,7 +184,7 @@ if __name__ == "__main__":
 
         else:
             print(
-                'Invalid file selection. Enter "1" to input encrypted data manually or "2" to load encrypted data from a file.'
+                'Invalid file selection. Enter "1" to manually input encrypted data or "2" to load it from a file.'
             )
 
     branch_input = (
