@@ -18,7 +18,7 @@ To run this script, navigate to the directory containing the script and execute 
 python dbd_cdn_decryptor.py
 ```
 
-You will be prompted to either enter the encrypted data manually or load it from a file. After doing so, you will be asked to select a branch. Type the key for your chosen branch and press "Enter."
+You will be prompted to either manually enter the encrypted data or load it from a file. Once the data is provided, you will be prompted to select a branch by entering its corresponding key and pressing "Enter".
 
 ## Updating Access Keys
 
