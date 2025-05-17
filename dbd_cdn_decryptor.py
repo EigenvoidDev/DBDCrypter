@@ -29,11 +29,11 @@ class DBDDecryption:
     ZLIB_COMPRESSION_PREFIX = "DbdDAQEB"
 
     ACCESS_KEYS = {
-        "8.7.0_qa": "Dve6bTFAxA5AqrB1zCr7x9pfQ60gAflMo0GUzN4lE5w=",
-        "8.7.0_stage": "R0oSCK/diXGLeBxbO5Q+rsZEPQMTDLny6vms3MuSjjc=",
-        "8.7.0_cert": "12qJ84fv+venn0p7WTqKlxy3R8djjNFKV6M6ROZAk/I=",
-        "8.7.0_ptb": "50DRHA7vSn0N6eBkh9kzkmDBG+kYzcHKwacplIqnXkg=",
-        "8.7.0_live": "pLoYHm+5nJDbohTN6txfHo5bi92qJ1UT19cAzumsFlg=",
+        "8.7.1_qa": "X5RxT0nMZVsIics+QbGFKsDoaCG1UhR7uz9sNGnR3Lk=",
+        "8.7.1_stage": "lMRrOn3ZdHj+xTVfdyIsZreKpfyZo4jcj2hvmxI+r+0=",
+        "8.7.1_cert": "XzO7cQEHx26OhJR4fj1YBavZMvmXfb6arau64S9L+Fg=",
+        "8.7.1_ptb": "qarb+XXU3j2inyfAEEfyY2s9KZop8ngh2+ddrljrQfY=",
+        "8.7.1_live": "N+r8gZ47S2ZDQ2nurlp7FbCwe+gB6OtpAftTK9Zf5Cs=",
     }
 
     @staticmethod
