@@ -1,37 +1,39 @@
-# Dead By Daylight Content Delivery Network Decryptor
+# DBDCrypter
 
 [Dead by Daylight](https://deadbydaylight.com/) is an online asymmetric multiplayer survival horror video game developed and published by Canadian studio [Behaviour Interactive](https://www.bhvr.com/).
 
-**Dead by Daylight Content Delivery Network Decryptor** is a script that allows you to decrypt encrypted data from the Dead by Daylight Content Delivery Network (CDN). It supports multiple game branches (QA, Stage, Cert, PTB, and Live), each having its own unique access key for the decryption process.
+**DBDCrypter** is a command-line tool that can decrypt and re-encrypt data served from Dead by Daylight's private API. It handles both asset and profile data formats and supports branch-specific keys for QA, Stage, Cert, PTB, and Live environments.
 
 ## Requirements
 
-This script requires the [PyCryptodome](https://pypi.org/project/pycryptodome/) library to run. You can install it using pip:
+This tool requires the [PyCryptodome](https://pypi.org/project/pycryptodome/) library to run. You can install it using pip:
 ```
 pip install pycryptodome
 ```
 
 ## Usage
 
-To run this script, navigate to the directory containing the script and execute the following command in your terminal:
+To run this tool, open a terminal, navigate to its root directory, and execute:
 ```
-python dbd_cdn_decryptor.py
+python main.py
 ```
 
-You will be prompted to either manually enter the encrypted data or load it from a file. Once the data is provided, you will be prompted to select a branch by entering its corresponding key and pressing "Enter".
+You will be prompted to choose whether to decrypt or encrypt data.
+- **For decryption:** You can either manually enter the encrypted data or load it from a file. Once provided, you will be prompted to select a branch by entering its corresponding key.
+- **For encryption:** You will be prompted to select a file containing decrypted data and then enter its corresponding versioned branch.
 
-## Updating Access Keys
+## Updating Access keys
 
-Please note that when a new Dead by Daylight update is released, access keys for the different game branches may change. You will need to manually update the access keys in the script to reflect the new game version. To update the access keys in the script, follow these steps:
+**Note:** When a new Dead by Daylight update is released, the access keys for each game branch may change. You will need to manually update the access keys in the `config.py` module to reflect the new game version. To update the access keys, follow these steps:
 
-1. Launch [FModel](https://github.com/4sval/FModel), select Dead by Daylight as your detected game, and provide the relevant mapping file and AES key. Then, load the game archives, navigate to the `DeadByDaylight` directory, and open `Config > DefaultGame.ini`.
+1. Launch [FModel](https://github.com/4sval/FModel), select Dead by Daylight as the detected game, and provide the appropriate mapping file and AES key. Then, load the game archives, navigate to the `DeadByDaylight` directory, and open `Config > DefaultGame.ini`.
 
-2. In `DefaultGame.ini`, search for the section header `[/Script/S3Command.AccessKeys]`. Below this, you will find a list of AES access keys.
+2. In `DefaultGame.ini`, locate the section header `[/Script/S3Command.AccessKeys]`. The access keys are listed directly beneath this header.
 
-3. If `DefaultGame.ini` is not visible in the `Config` folder within FModel, then export the `Config` folder's package raw data to your chosen output directory. After exporting, open the file from there to locate the access keys.
+3. If `DefaultGame.ini` does not appear in the `Config` folder, then export the raw data of the `Config` folder's package to a directory of your choice. After exporting, open the file from the output directory to locate the access keys.
 
-4. Copy the updated access keys from `DefaultGame.ini` and paste them into the script's configuration section, where the keys are defined.
+4. Copy the updated access keys from `DefaultGame.ini` and paste them into the `config.py` module, where the `ACCESS_KEYS` dictionary is defined.
 
 ## License
 
-Dead by Daylight Content Delivery Network Decryptor is licensed under [Apache License 2.0](https://github.com/EigenvoidDev/DeadByDaylightCDNDecryptor/blob/main/LICENSE), and licenses of third-party libraries used are listed [here](https://github.com/EigenvoidDev/DeadByDaylightCDNDecryptor/blob/main/NOTICE).
+DBDCrypter is licensed under the [Apache License 2.0](https://github.com/EigenvoidDev/DBDCrypter/blob/main/LICENSE). Licenses and attributions for third-party components are available in the [NOTICE file](https://github.com/EigenvoidDev/DBDCrypter/blob/main/NOTICE).
