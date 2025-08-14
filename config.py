@@ -4,9 +4,9 @@ PROFILE_ENCRYPTION_AES_KEY = b"5BCC2D6A95D4DF04A005504E59A9B36E"
 ZLIB_COMPRESSION_PREFIX = "DbdDAQEB"
 
 ACCESS_KEYS = {
-    "9.1.1_qa": "lwBz/2jzh+pugFuSKXugGhY0aMA0LqZzDdEZzKxYHd4=",
-    "9.1.1_stage": "mxuWEJWFChj8/tBeo/AEHbkeWt+MYbKg2/AsGfdZEYo=",
-    "9.1.1_cert": "neh+TptWTjgqIOkTJetoS6ZcW9KcToYKfj0tFJoZIUY=",
-    "9.1.1_ptb": "jjogK5DBPuqymm3clqHf0BoKEsg4iOUBBSKNrsJX8aE=",
-    "9.1.1_live": "HTOmwKz2NqK2Vc8xPxhHBwLWe0eHZU31fet5wh28ANc=",
+    "9.1.2_qa": "pZXF/CYYwaBw2HqKJGskX960/ch8Bss2Bcz79gtElj4=",
+    "9.1.2_stage": "kTxbbCp1C4EZ8teLGHKDob4aO9D+1SCSQBbahQPxpYE=",
+    "9.1.2_cert": "joFn9n/ur8kSafUeqbyF9FKCA3HmRjOAZyEcBsKPvoU=",
+    "9.1.2_ptb": "j24zw79mEX4vFD/f5/hC3a8cKyMDfRTVlQzv8vtPRYI=",
+    "9.1.2_live": "WP9Biim/SZGlSsD5KLOtKckib6phr6+BuRJAGKZDhtQ=",
 }
