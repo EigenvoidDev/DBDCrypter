@@ -1,0 +1,144 @@
+/* Global Window Styles */
+QWidget {
+	background-color: #1e1e1e;
+	color: #e0e0e0;
+	font-family: "Segoe UI", sans-serif;
+	font-size: 12px;
+	outline: 0;
+}
+
+/* Group Box Styles */
+QGroupBox {
+	border: none;
+	font-size: 14px;
+	margin-top: 18px;
+}
+
+QGroupBox::title {
+	background-color: #1e1e1e;
+	color: #ff9b42;
+	subcontrol-origin: margin;
+	subcontrol-position: top center;
+}
+
+/* Radio Button Styles */
+QRadioButton {
+	spacing: 8px;
+}
+
+QRadioButton::indicator {
+	background: #3a3a3a;
+	border: 1px solid #555;
+	border-radius: 8px;
+	height: 12px;
+	width: 12px;
+}
+
+QRadioButton::indicator:checked {
+	background-color: #e8893a;
+	border: 1px solid #e8893a;
+}
+
+/* Text Edit Styles */
+QTextEdit {
+	background-color: #2c2c2c;
+	border: 1px solid #444;
+	border-radius: 4px;
+	selection-background-color: #555;
+}
+
+QTextEdit#statusLog {
+	font-family: "Consolas", "Courier New", monospace;
+}
+
+/* Push Button Styles */
+QPushButton {
+	background-color: #3a3a3a;
+	border: 1px solid #555;
+	border-radius: 4px;
+	padding: 5px 10px;
+}
+
+QPushButton:disabled {
+	background-color: #2a2a2a;
+	border: 1px solid #333;
+	color: #777;
+}
+
+QPushButton:hover {
+	background-color: #464646;
+}
+
+QPushButton:pressed {
+	background-color: #565656;
+}
+
+/* Combo Box Styles */
+QComboBox {
+	background-color: #3a3a3a;
+	border: 1px solid #555;
+	border-radius: 4px;
+	padding: 5px 10px;
+}
+
+QComboBox:disabled {
+	background-color: #2a2a2a;
+	border: 1px solid #333;
+	color: #777;
+}
+
+QComboBox:hover {
+	border: 1px solid #e8893a;
+}
+
+QComboBox::drop-down {
+	image: url(images/chevron-down.png);
+	margin-right: 6px;
+	subcontrol-origin: padding;
+	subcontrol-position: center right;
+	width: 18px;
+}
+
+QComboBox::drop-down:disabled {
+    image: none;
+}
+
+QComboBox QAbstractItemView {
+	background-color: #323232;
+	border: 1px solid #3a3a3a;
+	border-radius: 1px;
+	outline: none;
+}
+
+QComboBox QAbstractItemView::item {
+	padding: 3px 5px;
+}
+
+QComboBox QAbstractItemView::item:selected {
+	background-color: #c96a2e;
+	outline: none;
+}
+
+/* Scroll Bar Styles */
+QScrollBar:vertical,
+QScrollBar:horizontal {
+	background: #2c2c2c;
+	border: none;
+	height: 10px;
+	margin: 0;
+	width: 10px;
+}
+
+QScrollBar::handle:vertical,
+QScrollBar::handle:horizontal {
+	background: #565656;
+	min-height: 20px;
+}
+
+QScrollBar::add-line,
+QScrollBar::sub-line,
+QScrollBar::add-page,
+QScrollBar::sub-page {
+	background: none;
+	border: none;
+}

@@ -1,12 +1,20 @@
-ASSET_ENCRYPTION_PREFIX = "DbdDAwAC"
-PROFILE_ENCRYPTION_PREFIX = "DbdDAgAC"
-PROFILE_ENCRYPTION_AES_KEY = b"5BCC2D6A95D4DF04A005504E59A9B36E"
+# ========================
+# Encryption / Compression
+# ========================
+
+CLIENT_DATA_ENCRYPTION_PREFIX = "DbdDAwAC"
+FULL_PROFILE_ENCRYPTION_PREFIX = "DbdDAgAC"
+FULL_PROFILE_AES_KEY = b"5BCC2D6A95D4DF04A005504E59A9B36E"
 ZLIB_COMPRESSION_PREFIX = "DbdDAQEB"
 
+# ========================
+# Access Keys
+# ========================
+
 ACCESS_KEYS = {
-    "9.1.2_qa": "pZXF/CYYwaBw2HqKJGskX960/ch8Bss2Bcz79gtElj4=",
-    "9.1.2_stage": "kTxbbCp1C4EZ8teLGHKDob4aO9D+1SCSQBbahQPxpYE=",
-    "9.1.2_cert": "joFn9n/ur8kSafUeqbyF9FKCA3HmRjOAZyEcBsKPvoU=",
-    "9.1.2_ptb": "j24zw79mEX4vFD/f5/hC3a8cKyMDfRTVlQzv8vtPRYI=",
-    "9.1.2_live": "WP9Biim/SZGlSsD5KLOtKckib6phr6+BuRJAGKZDhtQ=",
+    "9.2.0_qa": "FWAn2/c17ft6G0/0T/fqDy9UG7SI8AikFfR6c2aFuYw=",
+    "9.2.0_stage": "5sE0n0ejbe803xsii8G+irEX74FmLtreUsNtPpYnsn8=",
+    "9.2.0_cert": "Qy5pg391Xo65Z+rW0V0AoiJwoD+EpXyrYdxyv53pDx0=",
+    "9.2.0_ptb": "JFZk9DXPjKO0kSqo89TQ+xjynvCoYvlyAC1fEI59rZ4=",
+    "9.2.0_live": "+DzFCWiN+SsF2p2Qb8Uul2W4xKx6hUPPZWkS2osu0+Y=",
 }
