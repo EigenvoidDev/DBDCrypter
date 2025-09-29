@@ -18,14 +18,14 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from core.decrypter import DBDDecrypter
-from core.encrypter import DBDEncrypter
 from config import (
     ACCESS_KEYS,
     CLIENT_DATA_ENCRYPTION_PREFIX,
     FULL_PROFILE_ENCRYPTION_PREFIX,
     ZLIB_COMPRESSION_PREFIX,
 )
+from core.decrypter import DBDDecrypter
+from core.encrypter import DBDEncrypter
 
 # ---------------------- Utilities ----------------------
 def resource_path(relative_path):
@@ -54,7 +54,7 @@ def run_gui():
     app.setWindowIcon(QIcon(icon_path))
 
     window = QWidget()
-    window.setWindowTitle("DBD Crypter v2.0.0")
+    window.setWindowTitle("DBD Crypter v2.0.1")
     window.setWindowIcon(QIcon(icon_path))
 
     window.setWindowFlags(

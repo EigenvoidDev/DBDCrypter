@@ -23,7 +23,7 @@ If you are on **Windows**, download the prebuilt release from the [Releases page
 
 #### Windows Security Warnings
 
-On **Windows 8 and later**, you may see a **SmartScreen warning** because the application is unsigned. Code-signing certificates require a paid license, so Windows may list it as coming from an "unknown publisher".
+On **Windows 8 and later**, you may see a security warning when launching the application. This occurs because the application is not digitally signed, and Windows relies on code-signing to verify the identity of software publishers. Since obtaining a code-signing certificate requires a paid license, unsigned applications are labeled as coming from an "unknown publisher".
 
 Some antivirus software may also flag the application as suspicious or block the download. These detections are **false positives**. If the application is blocked from running, you may need to add it to your allowlist or exclusions.
 

@@ -1,5 +1,6 @@
 import base64
 import zlib
+
 from Crypto.Cipher import AES
 
 from config import ACCESS_KEYS, CLIENT_DATA_ENCRYPTION_PREFIX, ZLIB_COMPRESSION_PREFIX
