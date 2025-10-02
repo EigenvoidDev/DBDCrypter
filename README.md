@@ -12,7 +12,7 @@ If you are running the application from source (e.g., cloned from GitHub), ensur
 ```
 pip install PyQt6 pycryptodome
 ```
-After installation, open a terminal, navigate to the project’s root directory, and start the application with:
+After installation, open a terminal, navigate to the project's root directory, and start the application with:
 ```
 python main.py
 ```
