@@ -31,7 +31,7 @@ class DBDEncrypter:
         access_key = ACCESS_KEYS.get(branch)
         if not access_key:
             raise Exception(f'Access key not found for branch "{branch}"')
-        return base64.b64decode(access_key)
+        return base64.urlsafe_b64decode(access_key)
 
     @staticmethod
     def _encode_with_zlib_prefix(compressed, size_header):

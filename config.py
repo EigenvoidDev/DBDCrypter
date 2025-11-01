@@ -1,20 +1,12 @@
-# ========================
-# Encryption / Compression
-# ========================
-
 CLIENT_DATA_ENCRYPTION_PREFIX = "DbdDAwAC"
 FULL_PROFILE_ENCRYPTION_PREFIX = "DbdDAgAC"
 FULL_PROFILE_AES_KEY = b"5BCC2D6A95D4DF04A005504E59A9B36E"
 ZLIB_COMPRESSION_PREFIX = "DbdDAQEB"
 
-# ========================
-# Access Keys
-# ========================
-
 ACCESS_KEYS = {
-    "9.2.0_qa": "FWAn2/c17ft6G0/0T/fqDy9UG7SI8AikFfR6c2aFuYw=",
-    "9.2.0_stage": "5sE0n0ejbe803xsii8G+irEX74FmLtreUsNtPpYnsn8=",
-    "9.2.0_cert": "Qy5pg391Xo65Z+rW0V0AoiJwoD+EpXyrYdxyv53pDx0=",
-    "9.2.0_ptb": "JFZk9DXPjKO0kSqo89TQ+xjynvCoYvlyAC1fEI59rZ4=",
-    "9.2.0_live": "+DzFCWiN+SsF2p2Qb8Uul2W4xKx6hUPPZWkS2osu0+Y=",
+    "9.2.3_qa": "LyAVqSWcR-Zdspf39onc-sWacfk8bJYzZcOxmHV1KnA=",
+    "9.2.3_stage": "2raQfld_VrAMfqLPXQd4aPXM1PfyeQkVRxWASq_zqjU=",
+    "9.2.3_cert": "UWeprvALk0NrJG1Qgmm7gPU5Fd9NvHHE8Z0i3BWnBCo=",
+    "9.2.3_ptb": "7Rd3PhzGh1T9CqIKwbR3UwZUT04u5HyQozX8FHVy-y0=",
+    "9.2.3_live": "rli_S5VpT7prLgrLXBCZv-m_YJWokqGo7lmFkVwrlmE=",
 }

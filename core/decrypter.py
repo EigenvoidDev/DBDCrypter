@@ -62,7 +62,7 @@ class DBDDecrypter:
         if not access_key:
             raise Exception(f'Key ID "{cleaned_key_id}" not in available access keys')
 
-        decrypted_key = base64.b64decode(access_key)
+        decrypted_key = base64.urlsafe_b64decode(access_key)
         decoded_buffer = raw_payload[slice_len:]
         return DBDDecrypter._process_decrypted_data(
             decoded_buffer, decrypted_key, branch

@@ -54,7 +54,7 @@ def run_gui():
     app.setWindowIcon(QIcon(icon_path))
 
     window = QWidget()
-    window.setWindowTitle("DBD Crypter v2.0.1")
+    window.setWindowTitle("DBD Crypter v2.0.2")
     window.setWindowIcon(QIcon(icon_path))
 
     window.setWindowFlags(
