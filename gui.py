@@ -19,8 +19,10 @@ from PyQt6.QtWidgets import (
 )
 
 from config import (
-    ACCESS_KEYS,
     CLIENT_DATA_ENCRYPTION_PREFIX,
+    DECRYPT_BRANCHES,
+    DECRYPT_BRANCH_MAP,
+    ENCRYPT_KEYS,
     FULL_PROFILE_ENCRYPTION_PREFIX,
     ZLIB_COMPRESSION_PREFIX,
 )
@@ -46,6 +48,23 @@ def load_stylesheet(path):
     return stylesheet
 
 
+def is_encrypted_or_compressed(text):
+    return text.startswith(
+        (
+            CLIENT_DATA_ENCRYPTION_PREFIX,
+            FULL_PROFILE_ENCRYPTION_PREFIX,
+            ZLIB_COMPRESSION_PREFIX,
+        )
+    )
+
+
+def format_json(text):
+    try:
+        return json.dumps(json.loads(text), indent=4)
+    except json.JSONDecodeError:
+        return text
+
+
 # ---------------------- GUI ----------------------
 def run_gui():
     icon_path = resource_path("icons/app_icon.ico")
@@ -54,7 +73,7 @@ def run_gui():
     app.setWindowIcon(QIcon(icon_path))
 
     window = QWidget()
-    window.setWindowTitle("DBD Crypter v2.0.2")
+    window.setWindowTitle("DBD Crypter v2.1.0")
     window.setWindowIcon(QIcon(icon_path))
 
     window.setWindowFlags(
@@ -69,14 +88,6 @@ def run_gui():
 
     # ---------------- Internal State ----------------
     loaded_file_content = {"data": None}
-
-    branch_map = {
-        "Quality Assurance": {"branch": "qa", "key_index": 0},
-        "Staging": {"branch": "stage", "key_index": 1},
-        "Certification": {"branch": "cert", "key_index": 2},
-        "Player Test Build": {"branch": "ptb", "key_index": 3},
-        "Live": {"branch": "live", "key_index": 4},
-    }
 
     # ---------------- QSS Stylesheet ----------------
     qss = load_stylesheet("style/styles.qss")
@@ -121,14 +132,14 @@ def run_gui():
     input_group.setLayout(input_layout)
     left_layout.addWidget(input_group)
 
-    # Branch
-    branch_group = QGroupBox("Branch")
-    branch_layout = QVBoxLayout()
-    branch_combo = QComboBox()
-    branch_combo.setEnabled(False)
-    branch_layout.addWidget(branch_combo)
-    branch_group.setLayout(branch_layout)
-    left_layout.addWidget(branch_group)
+    # Target
+    target_group = QGroupBox()
+    target_layout = QVBoxLayout()
+    target_combo = QComboBox()
+    target_combo.setEnabled(False)
+    target_layout.addWidget(target_combo)
+    target_group.setLayout(target_layout)
+    left_layout.addWidget(target_group)
 
     # Status
     status_group = QGroupBox("Status")
@@ -215,11 +226,11 @@ def run_gui():
             input_text.setEnabled(False)
             input_text.setPlaceholderText("Input disabled: encryption requires a file")
 
-        # Manage branch and run buttons
+        # Manage target and run buttons
         has_text = bool(input_text.toPlainText().strip())
         has_file = bool(loaded_file_content["data"])
         ready = (has_text or has_file) if decrypt_radio.isChecked() else has_file
-        branch_combo.setEnabled(ready)
+        target_combo.setEnabled(ready)
         run_button.setEnabled(ready)
 
         # Manage clear file button
@@ -228,9 +239,15 @@ def run_gui():
         # Re-enable textChanged signals
         input_text.blockSignals(False)
 
-    def update_branch_combo():
-        branch_combo.clear()
-        branch_combo.addItems(branch_map.keys())
+    def update_target_combo():
+        target_combo.clear()
+
+        if decrypt_radio.isChecked():
+            target_group.setTitle("Branch")
+            target_combo.addItems(DECRYPT_BRANCHES)
+        else:
+            target_group.setTitle("Key ID")
+            target_combo.addItems(ENCRYPT_KEYS)
 
     def load_file():
         file_path, _ = QFileDialog.getOpenFileName(
@@ -261,8 +278,9 @@ def run_gui():
         update_ui_state()
 
     def run_crypto():
-        selected_branch = branch_combo.currentText()
+        selected_branch_or_key_id = target_combo.currentText()
         is_decrypt = decrypt_radio.isChecked()
+
         input_data = (
             loaded_file_content["data"]
             if loaded_file_content["data"]
@@ -275,47 +293,38 @@ def run_gui():
 
         try:
             if is_decrypt:
-                # Prevent double decryption
-                if not (
-                    input_data.startswith(CLIENT_DATA_ENCRYPTION_PREFIX)
-                    or input_data.startswith(FULL_PROFILE_ENCRYPTION_PREFIX)
-                    or input_data.startswith(ZLIB_COMPRESSION_PREFIX)
-                ):
+                # Prevent double decryption or bad input
+                if not is_encrypted_or_compressed(input_data):
                     append_status(
                         "Input is already decrypted or in an invalid format.",
                         QColor("#ff5555"),
                     )
                     return
 
-                branch = branch_map[selected_branch]["branch"]
-                result = DBDDecrypter.decrypt(input_data, branch)
+                if selected_branch_or_key_id not in DECRYPT_BRANCH_MAP:
+                    append_status(
+                        "Invalid branch selected for decryption.", QColor("#ff5555")
+                    )
+                    return
+
+                branch_code = DECRYPT_BRANCH_MAP[selected_branch_or_key_id]
+                result = DBDDecrypter.decrypt(input_data, branch_code)
                 append_status("Decryption successful!", QColor("#4caf50"))
+
             else:
-                # Prevent double encryption
-                if (
-                    input_data.startswith(CLIENT_DATA_ENCRYPTION_PREFIX)
-                    or input_data.startswith(FULL_PROFILE_ENCRYPTION_PREFIX)
-                    or input_data.startswith(ZLIB_COMPRESSION_PREFIX)
-                ):
+                # Prevent double encryption or bad input
+                if is_encrypted_or_compressed(input_data):
                     append_status(
                         "Input is already encrypted or in an invalid format.",
                         QColor("#ff5555"),
                     )
                     return
 
-                key_index = branch_map[selected_branch]["key_index"]
-                versioned_branch = list(ACCESS_KEYS.keys())[key_index]
-                result = DBDEncrypter.encrypt(input_data, versioned_branch)
+                result = DBDEncrypter.encrypt(input_data, selected_branch_or_key_id)
                 append_status("Encryption successful!", QColor("#4caf50"))
 
             # Pretty-print JSON if possible
-            try:
-                parsed = json.loads(result)
-                formatted_result = json.dumps(parsed, indent=4)
-                output_text.setPlainText(formatted_result)
-            except json.JSONDecodeError:
-                # Fallback for non-JSON text
-                output_text.setPlainText(result)
+            output_text.setPlainText(format_json(result))
 
             copy_output_button.setEnabled(True)
             save_output_button.setEnabled(True)
@@ -362,8 +371,8 @@ def run_gui():
     # ---------------- Connect Signals ----------------
     load_file_button.clicked.connect(load_file)
     clear_file_button.clicked.connect(clear_file)
-    decrypt_radio.toggled.connect(lambda: (update_ui_state(), update_branch_combo()))
-    encrypt_radio.toggled.connect(lambda: (update_ui_state(), update_branch_combo()))
+    decrypt_radio.toggled.connect(lambda: (update_ui_state(), update_target_combo()))
+    encrypt_radio.toggled.connect(lambda: (update_ui_state(), update_target_combo()))
     input_text.textChanged.connect(update_ui_state)
     run_button.clicked.connect(run_crypto)
     copy_output_button.clicked.connect(copy_output)
@@ -371,7 +380,7 @@ def run_gui():
 
     # Initial UI State
     update_ui_state()
-    update_branch_combo()
+    update_target_combo()
 
     window.show()
     sys.exit(app.exec())

@@ -43,6 +43,12 @@ class DBDDecrypter:
             return False
 
     @staticmethod
+    def _decode_access_key(key):
+        if "-" in key or "_" in key:
+            return base64.urlsafe_b64decode(key)
+        return base64.b64decode(key)
+
+    @staticmethod
     def _decrypt_client_data(content, branch):
         if not content.startswith(CLIENT_DATA_ENCRYPTION_PREFIX):
             raise Exception(
@@ -62,7 +68,8 @@ class DBDDecrypter:
         if not access_key:
             raise Exception(f'Key ID "{cleaned_key_id}" not in available access keys')
 
-        decrypted_key = base64.urlsafe_b64decode(access_key)
+        decrypted_key = DBDDecrypter._decode_access_key(access_key)
+
         decoded_buffer = raw_payload[slice_len:]
         return DBDDecrypter._process_decrypted_data(
             decoded_buffer, decrypted_key, branch

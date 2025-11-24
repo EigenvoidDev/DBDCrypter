@@ -10,7 +10,7 @@
 
 If you are running the application from source (e.g., cloned from GitHub), ensure you have [Python 3.9 or later](https://www.python.org/downloads/) installed. Then install the required dependencies with pip:
 ```
-pip install PyQt6 pycryptodome
+pip install PyQt6 pycryptodome requests
 ```
 After installation, open a terminal, navigate to the project's root directory, and start the application with:
 ```
@@ -31,19 +31,13 @@ Some antivirus software may also flag the application as suspicious or block the
 
 At the top of the interface, select whether you want to **decrypt** or **encrypt** data:
 - **Decrypt:** Enter the encrypted data manually or load it from a file, then select the appropriate branch and click the **Run** button.
-- **Encrypt:** Choose a file containing decrypted data, select its corresponding branch, and click the **Run** button.
+- **Encrypt:** Choose a file containing decrypted data, select its corresponding key ID, and click the **Run** button.
 
-## Updating Access Keys
+## Access Key Handling
 
-**Note:** When a new Dead by Daylight update is released, the access keys for each game branch may change. You will need to manually update them in the `config.py` module to match the new game version. To update the access keys, follow these steps:
+On startup, the application retrieves access keys automatically from the **[Dead by Queue Key API](https://keyapi.deadbyqueue.com/keys)** and stores them in memory for the current session. When Behaviour Interactive updates Dead by Daylight and the keys change, the API automatically provides the updated keys.
 
-1. Launch [FModel](https://github.com/4sval/FModel), select Dead by Daylight as the detected game, and provide the appropriate mapping file and AES key. Load the game archives, navigate to the `DeadByDaylight` directory, and open `Config > DefaultGame.ini`.
-
-2. In `DefaultGame.ini`, locate the section header `[/Script/S3Command.AccessKeys]`. The access keys are listed directly beneath this header.
-
-3. If `DefaultGame.ini` does not appear in the `Config` folder, export the raw data of the `Config` folder's package to a directory of your choice. Then open the exported file to locate the access keys.
-
-4. Copy the updated access keys from `DefaultGame.ini` and paste them into the `config.py` module, in the `ACCESS_KEYS` dictionary.
+**Note:** An active internet connection is required when launching the application. If the API cannot be reached, any features that rely on access keys may not function until connectivity is restored.
 
 ## Attributions / Permissions
 

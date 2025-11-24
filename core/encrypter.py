@@ -27,11 +27,17 @@ class DBDEncrypter:
         return encrypted_content
 
     @staticmethod
+    def _decode_access_key(key):
+        if "-" in key or "_" in key:
+            return base64.urlsafe_b64decode(key)
+        return base64.b64decode(key)
+
+    @staticmethod
     def _get_decrypted_key(branch):
         access_key = ACCESS_KEYS.get(branch)
         if not access_key:
             raise Exception(f'Access key not found for branch "{branch}"')
-        return base64.urlsafe_b64decode(access_key)
+        return DBDEncrypter._decode_access_key(access_key)
 
     @staticmethod
     def _encode_with_zlib_prefix(compressed, size_header):
