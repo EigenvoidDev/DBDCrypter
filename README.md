@@ -35,9 +35,9 @@ At the top of the interface, select whether you want to **decrypt** or **encrypt
 
 ## Access Key Handling
 
-On startup, the application retrieves access keys automatically from the **[Dead by Queue Key API](https://keyapi.deadbyqueue.com/keys)** and stores them in memory for the current session. When Behaviour Interactive updates Dead by Daylight and the keys change, the API automatically provides the updated keys.
+On startup, the application automatically retrieves the latest access keys from the [Dead by Queue Key API](https://keyapi.deadbyqueue.com/keys) and stores them in memory for the duration of the session. When Behaviour Interactive updates Dead by Daylight and the keys change, the API provides the updated values automatically.
 
-**Note:** An active internet connection is required when launching the application. If the API cannot be reached, any features that rely on access keys may not function until connectivity is restored.
+**Note:** An active internet connection is required when launching the application. If the API cannot be reached, features that rely on access keys may not function until connectivity is restored.
 
 ## Attributions / Permissions
 
