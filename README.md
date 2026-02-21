@@ -2,7 +2,7 @@
 
 [Dead by Daylight](https://deadbydaylight.com/) is an online asymmetric multiplayer survival horror video game developed and published by Canadian studio [Behaviour Interactive](https://www.bhvr.com/).
 
-**DBDCrypter** is a desktop GUI tool for decrypting and re-encrypting data from Dead by Daylight's private API. It supports both client and full-profile data formats, with branch-specific keys for QA, Stage, Cert, PTB, and Live environments.
+**DBDCrypter** is a desktop GUI tool for decrypting and re-encrypting data from Dead by Daylight's private API. It supports both client and full-profile data formats, with branch-specific keys for Stage, Cert, PTB, and Live environments.
 
 ## Installation
 

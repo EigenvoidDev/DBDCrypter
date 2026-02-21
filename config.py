@@ -28,7 +28,7 @@ def clean_quotes(s):
 
 def version_to_tuple(version):
     """
-    Converts a version string like '7.4.0' into a tuple (7, 4, 0).
+    Converts a version string like '9.3.0' into a tuple (9, 3, 0).
     """
     return tuple(int(x) for x in version.split("."))
 
@@ -44,7 +44,7 @@ def fetch_access_keys():
 
     Returns:
         dict: { key_id: access_key, ... }
-            - Only includes keys with versions >= 7.4.0.
+            - Only includes keys with versions >= 9.3.0.
             - Skips keys starting with "9999." or "m_5.".
         Returns an empty dict if the request fails or no valid keys are found.
     """
@@ -73,7 +73,7 @@ def fetch_access_keys():
             continue
 
         version_prefix = left.split("_")[0]
-        if version_to_tuple(version_prefix) < (7, 4, 0):
+        if version_to_tuple(version_prefix) < (9, 3, 0):
             continue
 
         access_keys[left] = right
@@ -90,7 +90,6 @@ ACCESS_KEYS = fetch_access_keys()
 # Human-readable branch names mapped to branch codes.
 # Used to select the correct branch-specific decryption key.
 DECRYPT_BRANCH_MAP = {
-    "Quality Assurance": "qa",
     "Staging": "stage",
     "Certification": "cert",
     "Player Test Build": "ptb",
