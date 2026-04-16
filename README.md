@@ -8,11 +8,16 @@
 
 ### Option 1: Run from Source
 
-If you are running the application from source (e.g., cloned from GitHub), ensure you have [Python 3.9 or later](https://www.python.org/downloads/) installed. Then install the required dependencies with pip:
+If you want to run the application from source, ensure you have [Python 3.10 or later](https://www.python.org/downloads/) installed. Then open a terminal and run:
 ```
-pip install PyQt6 pycryptodome requests
+git clone https://github.com/EigenvoidDev/DBDCrypter.git
+cd DBDCrypter
 ```
-After installation, open a terminal, navigate to the project's root directory, and start the application with:
+Install the required dependencies:
+```
+pip install -r requirements.txt
+```
+Finally, start the application:
 ```
 python main.py
 ```

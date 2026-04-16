@@ -1,25 +1,33 @@
 import requests
 
-# ========================
-# Encryption / Compression
-# ========================
-
-CLIENT_DATA_ENCRYPTION_PREFIX = "DbdDAwAC"
-FULL_PROFILE_ENCRYPTION_PREFIX = "DbdDAgAC"
-FULL_PROFILE_AES_KEY = b"5BCC2D6A95D4DF04A005504E59A9B36E"
-ZLIB_COMPRESSION_PREFIX = "DbdDAQEB"
-
-# ========================
-# Remote Key API
-# ========================
+# =========================
+# Configuration / Constants
+# =========================
 
 KEY_API_URL = "https://keyapi.deadbyqueue.com/keys"
+REQUEST_TIMEOUT = 5
+
+MIN_VERSION = (9, 5, 0)
+EXCLUDED_PREFIXES = ("9999.", "m_5.")
+
+
+class DataPrefixes:
+    CLIENT_DATA = "DbdDAwAC"
+    FULL_PROFILE = "DbdDAgAC"
+    ZLIB = "DbdDAQEB"
+
+
+class EncryptionKeys:
+    FULL_PROFILE_AES = b"5BCC2D6A95D4DF04A005504E59A9B36E"
+
+
+# =========================
+# Utility Functions
+# =========================
 
 
 def clean_quotes(s):
-    """
-    Removes wrapping quotes and unescapes \" inside strings.
-    """
+    """Strip wrapping quotes and unescape escaped quotes."""
     s = s.strip()
     if s.startswith('"') and s.endswith('"'):
         s = s[1:-1]
@@ -27,34 +35,16 @@ def clean_quotes(s):
 
 
 def version_to_tuple(version):
-    """
-    Converts a version string like '9.3.0' into a tuple (9, 3, 0).
-    """
     return tuple(int(x) for x in version.split("."))
 
 
-# ========================
-# Access Keys
-# ========================
+# =========================
+# Parsing Logic
+# =========================
 
 
-def fetch_access_keys():
-    """
-    Fetches Dead by Daylight access keys from the remote key API.
-
-    Returns:
-        dict: { key_id: access_key, ... }
-            - Only includes keys with versions >= 9.3.0.
-            - Skips keys starting with "9999." or "m_5.".
-        Returns an empty dict if the request fails or no valid keys are found.
-    """
-    try:
-        response = requests.get(KEY_API_URL, timeout=5)
-        response.raise_for_status()
-        response_text = response.text
-    except Exception:
-        return {}
-
+def parse_access_keys(response_text):
+    """Parse API response into access keys, filtering by version and excluded prefixes."""
     access_keys = {}
 
     for line in response_text.splitlines():
@@ -62,46 +52,55 @@ def fetch_access_keys():
         if not line or ":" not in line:
             continue
 
-        left, right = line.split(":", 1)
-        left = clean_quotes(left.strip())
-        right = clean_quotes(right.strip())
+        key_id, access_key = line.split(":", 1)
+        key_id = clean_quotes(key_id.strip())
+        access_key = clean_quotes(access_key.strip())
 
-        if not left or not right:
+        if not key_id or not access_key:
             continue
 
-        if left.startswith("9999.") or left.startswith("m_5."):
+        if key_id.startswith(EXCLUDED_PREFIXES):
             continue
 
-        version_prefix = left.split("_")[0]
-        if version_to_tuple(version_prefix) < (9, 3, 0):
+        version_prefix = key_id.split("_")[0]
+
+        try:
+            if version_to_tuple(version_prefix) < MIN_VERSION:
+                continue
+        except ValueError:
             continue
 
-        access_keys[left] = right
+        access_keys[key_id] = access_key
 
     return access_keys
 
 
-ACCESS_KEYS = fetch_access_keys()
+# =========================
+# API Access
+# =========================
 
-# ========================
-# Decryption Branches
-# ========================
 
-# Human-readable branch names mapped to branch codes.
-# Used to select the correct branch-specific decryption key.
-DECRYPT_BRANCH_MAP = {
+def fetch_access_keys():
+    """Fetch access keys from the API and return parsed results, or {} on failure."""
+    try:
+        response = requests.get(KEY_API_URL, timeout=REQUEST_TIMEOUT)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Request failed: {e}")
+        return {}
+
+    return parse_access_keys(response.text)
+
+
+# =========================
+# Environment Branches
+# =========================
+
+ENVIRONMENT_BRANCH_MAP = {
     "Staging": "stage",
     "Certification": "cert",
     "Player Test Build": "ptb",
     "Live": "live",
 }
 
-DECRYPT_BRANCHES = list(DECRYPT_BRANCH_MAP.keys())
-
-# ========================
-# Encryption Key IDs
-# ========================
-
-# Version-tagged key identifiers fetched from the remote key API.
-# Used for encrypting data for the correct game version.
-ENCRYPT_KEYS = list(ACCESS_KEYS.keys())
+ENVIRONMENT_BRANCHES = tuple(ENVIRONMENT_BRANCH_MAP.keys())
