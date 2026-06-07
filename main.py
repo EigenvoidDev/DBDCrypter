@@ -1,5 +1,5 @@
-from config import fetch_access_keys
 from gui import run_gui
+from utils import fetch_access_keys
 
 
 def main():

@@ -4,48 +4,44 @@ import zlib
 from Crypto.Cipher import AES
 
 from config import DataPrefixes
+from utils import decode_access_key
 
 
 class DBDEncrypter:
     def __init__(self, access_keys):
         self.access_keys = access_keys
 
-    def encrypt(self, data, branch):
-        if not data:
-            raise ValueError("Input data cannot be empty.")
+    def encrypt(self, plaintext, version_with_branch):
+        if not plaintext:
+            raise ValueError("Input data is empty.")
 
-        decrypted_key = self._get_decrypted_key(branch)
-        cipher = AES.new(decrypted_key, AES.MODE_ECB)
+        aes_key = self._get_aes_key(version_with_branch)
+        cipher = AES.new(aes_key, AES.MODE_ECB)
 
-        utf16_data = data.encode("utf-16-le")
-        compressed = zlib.compress(utf16_data)
-        size_header = len(utf16_data).to_bytes(4, "little")
+        utf16_bytes = plaintext.encode("utf-16-le")
+        compressed_bytes = zlib.compress(utf16_bytes)
+        size_header = len(utf16_bytes).to_bytes(4, "little")
 
-        encoded_payload = self._encode_with_zlib_prefix(compressed, size_header)
-        encrypted_payload = self._encrypt_with_aes(cipher, encoded_payload)
-        key_id = self._generate_key_id(branch)
+        encoded_payload = self._prepare_zlib_payload(compressed_bytes, size_header)
+        ciphertext = self._encrypt_with_aes(cipher, encoded_payload)
+        key_id = self._derive_key_id(version_with_branch)
 
-        return self._build_encrypted_payload(encrypted_payload, key_id)
+        return self._build_encrypted_payload(ciphertext, key_id)
 
-    @staticmethod
-    def _decode_access_key(access_key):
-        if any(c in access_key for c in "-_"):
-            return base64.urlsafe_b64decode(access_key)
-        return base64.b64decode(access_key)
-
-    def _get_decrypted_key(self, branch):
-        access_key = self.access_keys.get(branch)
+    def _get_aes_key(self, version_with_branch):
+        access_key = self.access_keys.get(version_with_branch)
 
         if not access_key:
-            raise ValueError(f'Access key not found for branch "{branch}".')
+            raise ValueError(f'Access key not found for "{version_with_branch}".')
 
-        return self._decode_access_key(access_key)
+        return decode_access_key(access_key)
 
-    def _encode_with_zlib_prefix(self, compressed, size_header):
-        combined = size_header + compressed
-        prefixed = DataPrefixes.ZLIB.encode() + base64.b64encode(combined)
+    @staticmethod
+    def _prepare_zlib_payload(compressed_bytes, size_header):
+        combined_bytes = size_header + compressed_bytes
+        prefixed_bytes = DataPrefixes.ZLIB.encode() + base64.b64encode(combined_bytes)
 
-        shifted_bytes = bytearray((byte - 1) % 256 for byte in prefixed)
+        shifted_bytes = bytearray((byte - 1) % 256 for byte in prefixed_bytes)
 
         while len(shifted_bytes) % 16 != 0:
             shifted_bytes.append(0)
@@ -54,15 +50,13 @@ class DBDEncrypter:
 
     @staticmethod
     def _encrypt_with_aes(cipher, data):
-        encrypted = cipher.encrypt(data)
-        base64_raw = b"d\x00" + encrypted
-        return base64.b64encode(base64_raw)
+        return cipher.encrypt(data)
 
     @staticmethod
-    def _generate_key_id(branch):
-        key_id_buffer = bytes((byte - 1) % 256 for byte in branch.encode())
-        key_id_buffer = key_id_buffer[:-1]
-        return base64.b64encode(key_id_buffer).decode("ascii")
+    def _derive_key_id(version_with_branch):
+        return bytes((byte - 1) % 256 for byte in version_with_branch.encode())
 
-    def _build_encrypted_payload(self, encrypted, key_id):
-        return DataPrefixes.CLIENT_DATA + key_id + encrypted.decode()
+    def _build_encrypted_payload(self, ciphertext, key_id):
+        payload = key_id + b"\x00" + ciphertext
+        encoded_payload = base64.b64encode(payload).decode("ascii")
+        return DataPrefixes.CLIENT_DATA + encoded_payload

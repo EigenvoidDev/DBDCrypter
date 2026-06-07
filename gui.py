@@ -18,11 +18,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from config import (
-    DataPrefixes,
-    ENVIRONMENT_BRANCHES,
-    ENVIRONMENT_BRANCH_MAP,
-)
+from config import DataPrefixes
+from utils import version_to_tuple
 from core.decrypter import DBDDecrypter
 from core.encrypter import DBDEncrypter
 
@@ -45,14 +42,34 @@ def load_stylesheet(path):
     return stylesheet
 
 
+PAYLOAD_PREFIXES = (
+    DataPrefixes.CLIENT_DATA,
+    DataPrefixes.FULL_PROFILE,
+    DataPrefixes.ZLIB,
+)
+
+
 def is_encrypted_or_compressed(text):
-    return text.startswith(
-        (
-            DataPrefixes.CLIENT_DATA,
-            DataPrefixes.FULL_PROFILE,
-            DataPrefixes.ZLIB,
-        )
-    )
+    return text.startswith(PAYLOAD_PREFIXES)
+
+
+def clean_input(text):
+    if not text:
+        return text
+
+    payload_start = None
+
+    for prefix in PAYLOAD_PREFIXES:
+        prefix_index = text.find(prefix)
+
+        if prefix_index != -1:
+            payload_start = (
+                prefix_index
+                if payload_start is None
+                else min(payload_start, prefix_index)
+            )
+
+    return text[payload_start:] if payload_start is not None else text
 
 
 def format_json(text):
@@ -70,7 +87,7 @@ def run_gui(access_keys):
     app.setWindowIcon(QIcon(icon_path))
 
     window = QWidget()
-    window.setWindowTitle("DBD Crypter v2.2.0")
+    window.setWindowTitle("DBD Crypter v3.0.0")
     window.setWindowIcon(QIcon(icon_path))
     window.setWindowFlags(
         Qt.WindowType.Window
@@ -86,7 +103,7 @@ def run_gui(access_keys):
     app.setStyleSheet(qss)
 
     # Input State
-    loaded_file_content = {"data": None}
+    loaded_file_content = {"data": None, "file_path": None}
 
     # Output State
     output_metadata = {"mode": None}
@@ -132,7 +149,7 @@ def run_gui(access_keys):
     control_panel_layout.addWidget(input_group)
 
     # Selection Group
-    selection_group = QGroupBox()
+    selection_group = QGroupBox("Key ID")
     selection_combo = QComboBox()
     selection_combo.setEnabled(False)
     selection_layout = QVBoxLayout()
@@ -203,11 +220,18 @@ def run_gui(access_keys):
         status_log.setTextCursor(cursor)
         status_log.ensureCursorVisible()
 
+    def get_version_key(key):
+        try:
+            version_part = key.split("_", 1)[0]
+            return version_to_tuple(version_part)
+        except ValueError:
+            return (0, 0, 0)
+
     # ---------------------- UI State Management ----------------------
     def update_ui_state():
         input_text_edit.blockSignals(True)
 
-        has_file = bool(loaded_file_content["data"])
+        has_file = loaded_file_content["data"] is not None
         has_text = bool(input_text_edit.toPlainText().strip())
         has_output = bool(output_text_edit.toPlainText().strip())
 
@@ -246,32 +270,17 @@ def run_gui(access_keys):
         try:
             selection_combo.clear()
 
-            if decrypt_radio.isChecked():
-                selection_group.setTitle("Branch")
-                selection_combo.addItems(ENVIRONMENT_BRANCHES)
+            keys = list(access_keys.keys())
+            selection_combo.addItems(keys)
 
-                index = selection_combo.findText("live", Qt.MatchFlag.MatchFixedString)
-                if index >= 0:
-                    selection_combo.setCurrentIndex(index)
-                else:
-                    selection_combo.setCurrentIndex(0)
+            live_keys = [key for key in keys if key.endswith("_live")]
 
+            if live_keys:
+                latest_live_key = max(live_keys, key=get_version_key)
+                index = selection_combo.findText(latest_live_key)
+                selection_combo.setCurrentIndex(index if index >= 0 else 0)
             else:
-                selection_group.setTitle("Key ID")
-                keys = list(access_keys.keys())
-                selection_combo.addItems(keys)
-
-                live_keys = [key for key in keys if key.endswith("_live")]
-
-                if live_keys:
-                    latest_live_key = max(live_keys)
-                    index = selection_combo.findText(latest_live_key)
-                    if index >= 0:
-                        selection_combo.setCurrentIndex(index)
-                    else:
-                        selection_combo.setCurrentIndex(0)
-                else:
-                    selection_combo.setCurrentIndex(0)
+                selection_combo.setCurrentIndex(0)
 
         finally:
             selection_combo.blockSignals(False)
@@ -279,7 +288,6 @@ def run_gui(access_keys):
     # ---------------------- Event Handlers ----------------------
     def on_mode_changed():
         update_ui_state()
-        update_selection_options()
 
     def on_load_file():
         file_path, _ = QFileDialog.getOpenFileName(
@@ -290,23 +298,21 @@ def run_gui(access_keys):
             return
 
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
+            if decrypt_radio.isChecked():
+                with open(file_path, "rb") as f:
+                    content = f.read().decode("utf-8", errors="replace")
+            else:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
 
             loaded_file_content["data"] = content
             loaded_file_content["file_path"] = file_path
 
             append_status(f"File loaded: {file_path}", QColor("#4caf50"))
 
-        except json.JSONDecodeError:
-            loaded_file_content["data"] = None
-            loaded_file_content["file_path"] = None
-            append_status(f"Invalid JSON file: {file_path}", QColor("#ff5555"))
-
         except Exception as e:
             loaded_file_content["data"] = None
-            loaded_file_content["file_path"] = None
-            append_status(f"Failed to load file: {str(e)}", QColor("#ff5555"))
+            append_status(f"Failed to load file: {e}", QColor("#ff5555"))
 
         update_ui_state()
 
@@ -314,50 +320,52 @@ def run_gui(access_keys):
         if loaded_file_content["data"]:
             loaded_file_content["data"] = None
             loaded_file_content["file_path"] = None
-            append_status("File cleared, input re-enabled.", QColor("#ffa500"))
+            append_status("File cleared. Input re-enabled.", QColor("#ffa500"))
 
         update_ui_state()
 
     def on_run_clicked():
-        selection = selection_combo.currentText()
-        is_decrypt = decrypt_radio.isChecked()
+        selected_version = selection_combo.currentText()
+        decrypt_mode = decrypt_radio.isChecked()
 
-        file_data = loaded_file_content["data"]
-        input_data = file_data if file_data else input_text_edit.toPlainText().strip()
+        loaded_file_data = loaded_file_content["data"]
+        user_input = input_text_edit.toPlainText().strip()
 
-        if not is_decrypt and not file_data:
+        if not decrypt_mode and loaded_file_data is None:
             append_status(
-                "No file loaded. Please load a file to encrypt.", QColor("#ff5555")
+                "No file loaded. Encryption requires a file.", QColor("#ff5555")
             )
             return
 
+        effective_input = (
+            loaded_file_data if loaded_file_data is not None else user_input
+        )
+
+        if decrypt_mode:
+            effective_input = clean_input(effective_input)
+
         try:
-            if is_decrypt:
-                if not is_encrypted_or_compressed(input_data):
+            if decrypt_mode:
+                if not is_encrypted_or_compressed(effective_input):
                     append_status(
-                        "Input is already decrypted or in an invalid format.",
+                        "Input is already decrypted or is in an invalid format.",
                         QColor("#ff5555"),
                     )
                     return
 
-                if selection not in ENVIRONMENT_BRANCH_MAP:
-                    append_status("Invalid branch selected.", QColor("#ff5555"))
-                    return
-
-                branch = ENVIRONMENT_BRANCH_MAP[selection]
-                result = decrypter.decrypt(input_data, branch)
-                append_status("Decryption successful!", QColor("#4caf50"))
+                result = decrypter.decrypt(effective_input, selected_version)
+                append_status("Decryption completed successfully.", QColor("#4caf50"))
 
             else:
-                if is_encrypted_or_compressed(input_data):
+                if is_encrypted_or_compressed(effective_input):
                     append_status(
-                        "Input is already encrypted or in an invalid format.",
+                        "Input is already encrypted or is in an invalid format.",
                         QColor("#ff5555"),
                     )
                     return
 
                 try:
-                    json.loads(input_data)
+                    json.loads(effective_input)
                 except json.JSONDecodeError:
                     append_status(
                         "Encryption input must be valid JSON.",
@@ -365,20 +373,19 @@ def run_gui(access_keys):
                     )
                     return
 
-                result = encrypter.encrypt(input_data, selection)
-                append_status("Encryption successful!", QColor("#4caf50"))
+                result = encrypter.encrypt(effective_input, selected_version)
+                append_status("Encryption completed successfully.", QColor("#4caf50"))
 
             output_text_edit.setPlainText(format_json(result))
-
-            output_metadata["mode"] = "decrypt" if is_decrypt else "encrypt"
-
-            update_ui_state()
+            output_metadata["mode"] = "decrypt" if decrypt_mode else "encrypt"
 
         except Exception as e:
-            if is_decrypt:
-                append_status(f"Decryption failed: {str(e)}", QColor("#ff5555"))
+            if decrypt_mode:
+                append_status(f"Decryption failed: {e}", QColor("#ff5555"))
             else:
-                append_status(f"Encryption failed: {str(e)}", QColor("#ff5555"))
+                append_status(f"Encryption failed: {e}", QColor("#ff5555"))
+
+        update_ui_state()
 
     def on_copy_output():
         output = output_text_edit.toPlainText().strip()
@@ -398,7 +405,7 @@ def run_gui(access_keys):
 
         if mode is None:
             append_status(
-                'No output mode recorded. Click "Run" first.', QColor("#ff5555")
+                'No output is available. Click "Run" first.', QColor("#ff5555")
             )
             return
 
@@ -420,10 +427,10 @@ def run_gui(access_keys):
             with open(save_path, "w", encoding="utf-8") as f:
                 f.write(output)
 
-            append_status(f"Output saved to {save_path}", QColor("#4caf50"))
+            append_status(f"Output saved: {save_path}", QColor("#4caf50"))
 
         except Exception as e:
-            append_status(f"Save error: {str(e)}", QColor("#ff5555"))
+            append_status(f"Save failed: {e}", QColor("#ff5555"))
 
     # ---------------------- Signal Connections ----------------------
     load_file_button.clicked.connect(on_load_file)

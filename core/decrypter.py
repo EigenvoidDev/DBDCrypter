@@ -5,102 +5,105 @@ import zlib
 from Crypto.Cipher import AES
 
 from config import DataPrefixes, EncryptionKeys
+from utils import decode_access_key
 
 
 class DBDDecrypter:
     def __init__(self, access_keys):
         self.access_keys = access_keys
 
-    def decrypt(self, content, branch):
+    def decrypt(self, content, version_with_branch):
         if content.startswith(DataPrefixes.CLIENT_DATA):
-            return self._decrypt_client_data(content, branch)
+            return self._decrypt_client_data(content, version_with_branch)
 
         if content.startswith(DataPrefixes.FULL_PROFILE):
-            return self._decrypt_profile(content, branch)
+            return self._decrypt_profile(content, version_with_branch)
 
         if content.startswith(DataPrefixes.ZLIB):
-            return self._decompress_zlib(content, branch)
+            return self._decompress_zlib(content, version_with_branch)
 
         if content and not self._is_valid_json(content):
             raise ValueError(
-                "Decrypted data is not valid JSON. The access key may be incorrect or the data may be corrupted."
+                "Invalid JSON output. Access key may be incorrect or data may be corrupted."
             )
 
         return content
 
     @staticmethod
-    def _is_valid_json(string):
-        if not string.strip():
+    def _is_valid_json(text):
+        if not text.strip():
             return True
         try:
-            json.loads(string)
+            json.loads(text)
             return True
         except json.JSONDecodeError:
             return False
 
-    @staticmethod
-    def _decode_access_key(access_key):
-        if any(c in access_key for c in "-_"):
-            return base64.urlsafe_b64decode(access_key)
-        return base64.b64decode(access_key)
+    def _decrypt_client_data(self, content, version_with_branch):
+        encoded_payload = content[len(DataPrefixes.CLIENT_DATA) :]
+        raw_payload = base64.b64decode(encoded_payload)
 
-    def _decrypt_client_data(self, content, branch):
-        payload = content[len(DataPrefixes.CLIENT_DATA) :]
-        raw_payload = base64.b64decode(payload)
+        slice_length = len(version_with_branch) + 1
 
-        branch_len = len(branch)
-        slice_len = 7 + branch_len
+        key_id_bytes = raw_payload[:slice_length]
+        key_id_bytes = bytes((byte + 1) % 256 for byte in key_id_bytes)
 
-        key_id_buffer = raw_payload[:slice_len]
-        key_id_buffer = bytes((byte + 1) % 256 for byte in key_id_buffer)
+        key_id = key_id_bytes.decode("ascii").replace("\u0001", "")
 
-        cleaned_key_id = key_id_buffer.decode("ascii").replace("\u0001", "")
-        access_key = self.access_keys.get(cleaned_key_id)
-
+        access_key = self.access_keys.get(key_id)
         if not access_key:
-            raise ValueError(f'Key ID "{cleaned_key_id}" not found in access keys.')
+            raise ValueError(f'Key ID "{key_id}" was not found in access keys.')
 
-        decrypted_key = self._decode_access_key(access_key)
-        decoded_buffer = raw_payload[slice_len:]
-
-        return self._decode_aes_payload(decoded_buffer, decrypted_key, branch)
-
-    def _decrypt_profile(self, content, branch):
-        payload = content[len(DataPrefixes.FULL_PROFILE) :]
-        raw_payload = base64.b64decode(payload)
-
-        return self._decode_aes_payload(
-            raw_payload, EncryptionKeys.FULL_PROFILE_AES, branch
-        )
-
-    def _decode_aes_payload(self, buffer, key, branch):
-        cipher = AES.new(key, AES.MODE_ECB)
-        decrypted = cipher.decrypt(buffer)
-
-        result = bytearray()
-
-        for byte in decrypted:
-            if byte == 0:
-                break
-            result.append((byte + 1) % 256)
-
-        text = result.decode("ascii")
-        return self.decrypt(text, branch)
-
-    def _decompress_zlib(self, content, branch):
-        payload = content[len(DataPrefixes.ZLIB) :]
-        raw_payload = base64.b64decode(payload)
-
-        if len(raw_payload) < 4:
-            raise ValueError("Raw payload too short for zlib data.")
-
-        expected_size = int.from_bytes(raw_payload[:4], "little")
-        inflated_buffer = zlib.decompress(raw_payload[4:])
-
-        if len(inflated_buffer) != expected_size:
+        if key_id != version_with_branch:
             raise ValueError(
-                f"Inflated size mismatch: expected {expected_size}, got {len(inflated_buffer)}."
+                f'Expected "{version_with_branch}" but payload was encrypted with "{key_id}".'
             )
 
-        text = inflated_buffer.decode("utf-16")
-        return self.decrypt(text, branch)
+        aes_key = decode_access_key(access_key)
+
+        ciphertext = raw_payload[slice_length:]
+
+        return self._decode_aes_payload(ciphertext, aes_key, version_with_branch)
+
+    def _decrypt_profile(self, content, version_with_branch):
+        encoded_payload = content[len(DataPrefixes.FULL_PROFILE) :]
+        raw_payload = base64.b64decode(encoded_payload)
+
+        return self._decode_aes_payload(
+            raw_payload, EncryptionKeys.FULL_PROFILE_AES, version_with_branch
+        )
+
+    def _decode_aes_payload(self, ciphertext, aes_key, version_with_branch):
+        cipher = AES.new(aes_key, AES.MODE_ECB)
+        decrypted_bytes = cipher.decrypt(ciphertext)
+
+        result_bytes = bytearray()
+
+        for byte in decrypted_bytes:
+            if byte == 0:
+                break
+            result_bytes.append((byte + 1) % 256)
+
+        plaintext = result_bytes.decode("ascii")
+        return self.decrypt(plaintext, version_with_branch)
+
+    def _decompress_zlib(self, content, version_with_branch):
+        encoded_payload = content[len(DataPrefixes.ZLIB) :]
+        raw_payload = base64.b64decode(encoded_payload)
+
+        if len(raw_payload) < 4:
+            raise ValueError("Invalid zlib payload.")
+
+        size_header = raw_payload[:4]
+        expected_size = int.from_bytes(size_header, "little")
+
+        compressed_data = raw_payload[4:]
+        inflated_bytes = zlib.decompress(compressed_data)
+
+        if len(inflated_bytes) != expected_size:
+            raise ValueError(
+                f"Zlib size mismatch. Expected {expected_size}, got {len(inflated_bytes)}."
+            )
+
+        plaintext = inflated_bytes.decode("utf-16")
+        return self.decrypt(plaintext, version_with_branch)
