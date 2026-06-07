@@ -2,7 +2,7 @@
 
 [Dead by Daylight](https://deadbydaylight.com/) is an online asymmetric multiplayer survival horror video game developed and published by Canadian studio [Behaviour Interactive](https://www.bhvr.com/).
 
-**DBDCrypter** is a desktop GUI tool for decrypting and re-encrypting data from Dead by Daylight's private API. It supports both client and full-profile data formats, with branch-specific keys for Stage, Cert, PTB, and Live environments.
+**DBDCrypter** is a desktop GUI tool for decrypting and re-encrypting data from Dead by Daylight's private API. It supports both client and full-profile data formats and uses access keys associated with the Stage, Cert, PTB, and Live environments.
 
 ## Installation
 
@@ -35,8 +35,8 @@ Some antivirus software may also flag the application as suspicious or block the
 ## Usage
 
 At the top of the interface, select whether you want to **decrypt** or **encrypt** data:
-- **Decrypt:** Enter the encrypted data manually or load it from a file, then select the appropriate branch and click the **Run** button.
-- **Encrypt:** Choose a file containing decrypted data, select its corresponding key ID, and click the **Run** button.
+- **Decrypt:** Load encrypted data from a file or enter it manually, select the corresponding **Key ID**, and click the **Run** button.
+- **Encrypt:** Load decrypted data from a file, select the corresponding **Key ID**, and click the **Run** button.
 
 ## Access Key Handling
 
