@@ -2,7 +2,7 @@
 
 [Dead by Daylight](https://deadbydaylight.com/) is an online asymmetric multiplayer survival horror video game developed and published by Canadian studio [Behaviour Interactive](https://www.bhvr.com/).
 
-**DBDCrypter** is a desktop GUI tool for decrypting and re-encrypting data from Dead by Daylight's private API. It supports both client and full-profile data formats and uses access keys associated with the Stage, Cert, PTB, and Live environments.
+**DBDCrypter** is a desktop GUI tool for decrypting and re-encrypting data from Dead by Daylight's private API. It supports both client and full-profile data formats using environment-specific access keys for the Stage, Cert, PTB, and Live environments.
 
 ## Installation
 
@@ -35,18 +35,18 @@ Some antivirus software may also flag the application as suspicious or block the
 ## Usage
 
 At the top of the interface, select whether you want to **decrypt** or **encrypt** data:
-- **Decrypt:** Load encrypted data from a file or enter it manually, select the corresponding **Key ID**, and click the **Run** button.
-- **Encrypt:** Load decrypted data from a file, select the corresponding **Key ID**, and click the **Run** button.
+- **Decrypt:** Load encrypted data from a file or enter it manually, select the corresponding **Key ID**, and click **Run**.
+- **Encrypt:** Load decrypted data from a file, select the corresponding **Key ID**, and click **Run**.
 
 ## Access Key Handling
 
-On startup, the application automatically retrieves the latest access keys from the [Dead by Queue Key API](https://keyapi.deadbyqueue.com/keys) and stores them in memory for the duration of the session. When Behaviour Interactive updates Dead by Daylight and the keys change, the API provides the updated keys automatically.
+On startup, the application retrieves the latest access keys from the [Dead by Queue Key API](https://keyapi.deadbyqueue.com/keys) and stores them in memory for the duration of the session. When Behaviour Interactive updates Dead by Daylight, the API provides updated access keys.
 
 **Note:** An active internet connection is required when launching the application. If the API cannot be reached, features that rely on access keys may not function until connectivity is restored.
 
 ## Attributions / Permissions
 
-Some portions of this project are based on code by [Masusder](https://github.com/Masusder). Permission to use and modify this code has been granted by the author.
+Some portions of this project are based on code by [Masusder](https://github.com/Masusder). Permission to use and modify this code was granted by the author.
 
 ## License
 
