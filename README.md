@@ -34,7 +34,10 @@ Some antivirus software may also flag the application as suspicious or block the
 
 ## Usage
 
-At the top of the interface, select whether you want to **decrypt** or **encrypt** data:
+The application opens in **Decrypt mode by default**.
+
+At the top of the interface, select the desired mode:
+
 - **Decrypt:** Load encrypted data from a file or enter it manually, select the corresponding **Key ID**, and click **Run**.
 - **Encrypt:** Load decrypted data from a file, select the corresponding **Key ID**, and click **Run**.
 

@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 import json
 import os
 import sys
@@ -49,37 +51,53 @@ PAYLOAD_PREFIXES = (
 )
 
 
-def is_encrypted_or_compressed(text):
+def is_dbd_payload(text):
     return text.startswith(PAYLOAD_PREFIXES)
 
 
-def clean_input(text):
+def extract_dbd_payload(text):
     if not text:
         return text
 
     payload_start = None
 
     for prefix in PAYLOAD_PREFIXES:
-        prefix_index = text.find(prefix)
-
-        if prefix_index != -1:
-            payload_start = (
-                prefix_index
-                if payload_start is None
-                else min(payload_start, prefix_index)
-            )
+        index = text.find(prefix)
+        if index == -1:
+            continue
+        payload_start = index if payload_start is None else min(payload_start, index)
 
     return text[payload_start:] if payload_start is not None else text
 
 
-def format_json(text):
+def pretty_print_json(text):
     try:
         return json.dumps(json.loads(text), indent=4)
     except json.JSONDecodeError:
         return text
 
 
-# ---------------------- GUI ----------------------
+def key_id_to_version_tuple(key_id):
+    try:
+        version = key_id.split("_", 1)[0]
+        return version_to_tuple(version)
+    except ValueError:
+        return (0, 0, 0)
+
+
+# ----------------- Enums / State -----------------
+class Mode(Enum):
+    DECRYPT = "decrypt"
+    ENCRYPT = "encrypt"
+
+
+@dataclass
+class LoadedFileState:
+    data: str | None = None
+    file_path: str | None = None
+
+
+# ----------------- GUI -----------------
 def run_gui(access_keys):
     icon_path = resource_path("icons/app_icon.ico")
 
@@ -87,7 +105,7 @@ def run_gui(access_keys):
     app.setWindowIcon(QIcon(icon_path))
 
     window = QWidget()
-    window.setWindowTitle("DBD Crypter v3.0.0")
+    window.setWindowTitle("DBD Crypter v3.1.0")
     window.setWindowIcon(QIcon(icon_path))
     window.setWindowFlags(
         Qt.WindowType.Window
@@ -102,17 +120,17 @@ def run_gui(access_keys):
     qss = load_stylesheet("style/styles.qss")
     app.setStyleSheet(qss)
 
-    # Input State
-    loaded_file_content = {"data": None, "file_path": None}
-
-    # Output State
-    output_metadata = {"mode": None}
+    # State
+    loaded_file = LoadedFileState()
+    last_run_mode: Mode | None = None
+    last_run_input_path: str | None = None
+    last_result: str | None = None
 
     # Crypto
     decrypter = DBDDecrypter(access_keys)
     encrypter = DBDEncrypter(access_keys)
 
-    # ---------------------- Layouts ----------------------
+    # ----------------- Layouts -----------------
     main_layout = QHBoxLayout()
 
     # Control Panel Layout
@@ -148,14 +166,14 @@ def run_gui(access_keys):
     input_group.setLayout(input_layout)
     control_panel_layout.addWidget(input_group)
 
-    # Selection Group
-    selection_group = QGroupBox("Key ID")
-    selection_combo = QComboBox()
-    selection_combo.setEnabled(False)
-    selection_layout = QVBoxLayout()
-    selection_layout.addWidget(selection_combo)
-    selection_group.setLayout(selection_layout)
-    control_panel_layout.addWidget(selection_group)
+    # Key ID Selection Group
+    key_id_selection_group = QGroupBox("Key ID")
+    key_id_selection_combo = QComboBox()
+    key_id_selection_combo.setEnabled(False)
+    key_id_selection_layout = QVBoxLayout()
+    key_id_selection_layout.addWidget(key_id_selection_combo)
+    key_id_selection_group.setLayout(key_id_selection_layout)
+    control_panel_layout.addWidget(key_id_selection_group)
 
     # Status Group
     status_group = QGroupBox("Status")
@@ -201,7 +219,7 @@ def run_gui(access_keys):
 
     window.setLayout(main_layout)
 
-    # ---------------------- UI Utilities ----------------------
+    # ----------------- Helpers -----------------
     def append_status(message, color):
         message = str(message).rstrip("\n")
         timestamp = f"[{datetime.now().strftime('%H:%M:%S')}] "
@@ -220,75 +238,72 @@ def run_gui(access_keys):
         status_log.setTextCursor(cursor)
         status_log.ensureCursorVisible()
 
-    def get_version_key(key):
+    def current_mode():
+        return Mode.DECRYPT if decrypt_radio.isChecked() else Mode.ENCRYPT
+
+    def get_input_data():
+        if loaded_file.data is not None:
+            return loaded_file.data
+        return input_text_edit.toPlainText().strip()
+
+    def populate_key_ids():
+        key_id_selection_combo.blockSignals(True)
+
         try:
-            version_part = key.split("_", 1)[0]
-            return version_to_tuple(version_part)
-        except ValueError:
-            return (0, 0, 0)
+            key_id_selection_combo.clear()
 
-    # ---------------------- UI State Management ----------------------
-    def update_ui_state():
-        input_text_edit.blockSignals(True)
+            key_ids = list(access_keys.keys())
+            key_id_selection_combo.addItems(key_ids)
 
-        has_file = loaded_file_content["data"] is not None
+            live_key_ids = [key_id for key_id in key_ids if key_id.endswith("_live")]
+            if live_key_ids:
+                latest_live_key_id = max(live_key_ids, key=key_id_to_version_tuple)
+                index = key_id_selection_combo.findText(latest_live_key_id)
+                key_id_selection_combo.setCurrentIndex(index if index >= 0 else 0)
+            else:
+                key_id_selection_combo.setCurrentIndex(0)
+
+        finally:
+            key_id_selection_combo.blockSignals(False)
+
+    def update_ui():
+        has_file = loaded_file.data is not None
         has_text = bool(input_text_edit.toPlainText().strip())
         has_output = bool(output_text_edit.toPlainText().strip())
+        mode = current_mode()
 
-        if not has_output and output_metadata["mode"] is not None:
-            output_metadata["mode"] = None
+        input_text_edit.blockSignals(True)
+        try:
+            if has_file:
+                input_text_edit.clear()
+                input_text_edit.setEnabled(False)
+                input_text_edit.setPlaceholderText(
+                    "Input disabled: file already loaded"
+                )
+            elif mode is Mode.DECRYPT:
+                input_text_edit.setEnabled(True)
+                input_text_edit.setPlaceholderText("Enter text to decrypt")
+            else:  # Mode.ENCRYPT
+                input_text_edit.clear()
+                input_text_edit.setEnabled(False)
+                input_text_edit.setPlaceholderText(
+                    "Input disabled: encryption requires a file"
+                )
+        finally:
+            input_text_edit.blockSignals(False)
 
-        if has_file:
-            input_text_edit.clear()
-            input_text_edit.setEnabled(False)
-            input_text_edit.setPlaceholderText("Input disabled: file already loaded")
+        ready_to_run = (mode is Mode.DECRYPT and (has_file or has_text)) or (
+            mode is Mode.ENCRYPT and has_file
+        )
 
-        elif decrypt_radio.isChecked():
-            input_text_edit.setEnabled(True)
-            input_text_edit.setPlaceholderText("Enter text to decrypt")
-
-        else:
-            input_text_edit.clear()
-            input_text_edit.setEnabled(False)
-            input_text_edit.setPlaceholderText(
-                "Input disabled: encryption requires a file"
-            )
-
-        ready = (has_text or has_file) if decrypt_radio.isChecked() else has_file
-
-        selection_combo.setEnabled(ready)
-        run_button.setEnabled(ready)
+        key_id_selection_combo.setEnabled(ready_to_run)
+        run_button.setEnabled(ready_to_run)
         clear_file_button.setEnabled(has_file)
 
         copy_output_button.setEnabled(has_output)
         save_output_button.setEnabled(has_output)
 
-        input_text_edit.blockSignals(False)
-
-    def update_selection_options():
-        selection_combo.blockSignals(True)
-        try:
-            selection_combo.clear()
-
-            keys = list(access_keys.keys())
-            selection_combo.addItems(keys)
-
-            live_keys = [key for key in keys if key.endswith("_live")]
-
-            if live_keys:
-                latest_live_key = max(live_keys, key=get_version_key)
-                index = selection_combo.findText(latest_live_key)
-                selection_combo.setCurrentIndex(index if index >= 0 else 0)
-            else:
-                selection_combo.setCurrentIndex(0)
-
-        finally:
-            selection_combo.blockSignals(False)
-
-    # ---------------------- Event Handlers ----------------------
-    def on_mode_changed():
-        update_ui_state()
-
+    # ----------------- Event Handlers -----------------
     def on_load_file():
         file_path, _ = QFileDialog.getOpenFileName(
             window, "Load File", "", "JSON Files (*.json)"
@@ -297,67 +312,67 @@ def run_gui(access_keys):
         if not file_path:
             return
 
+        mode = current_mode()
+
         try:
-            if decrypt_radio.isChecked():
+            if mode is Mode.DECRYPT:
                 with open(file_path, "rb") as f:
-                    content = f.read().decode("utf-8", errors="replace")
-            else:
+                    raw_bytes = f.read()
+                content = raw_bytes.decode("utf-8", errors="replace")
+
+            else:  # Mode.ENCRYPT
                 with open(file_path, "r", encoding="utf-8") as f:
                     content = f.read()
 
-            loaded_file_content["data"] = content
-            loaded_file_content["file_path"] = file_path
-
+            loaded_file.data = content
+            loaded_file.file_path = file_path
             append_status(f"File loaded: {file_path}", QColor("#4caf50"))
 
         except Exception as e:
-            loaded_file_content["data"] = None
+            loaded_file.data = None
+            loaded_file.file_path = None
             append_status(f"Failed to load file: {e}", QColor("#ff5555"))
 
-        update_ui_state()
+        update_ui()
 
     def on_clear_file():
-        if loaded_file_content["data"]:
-            loaded_file_content["data"] = None
-            loaded_file_content["file_path"] = None
-            append_status("File cleared. Input re-enabled.", QColor("#ffa500"))
-
-        update_ui_state()
+        loaded_file.data = None
+        loaded_file.file_path = None
+        append_status("File cleared. Input re-enabled.", QColor("#ffa500"))
+        update_ui()
 
     def on_run_clicked():
-        selected_version = selection_combo.currentText()
-        decrypt_mode = decrypt_radio.isChecked()
+        nonlocal last_run_mode, last_run_input_path, last_result
 
-        loaded_file_data = loaded_file_content["data"]
-        user_input = input_text_edit.toPlainText().strip()
+        mode = current_mode()
 
-        if not decrypt_mode and loaded_file_data is None:
-            append_status(
-                "No file loaded. Encryption requires a file.", QColor("#ff5555")
-            )
+        key_id = key_id_selection_combo.currentText().strip()
+        if not key_id:
+            append_status("No key ID selected.", QColor("#ff5555"))
             return
 
-        effective_input = (
-            loaded_file_data if loaded_file_data is not None else user_input
-        )
+        data = get_input_data()
+        action = "Decryption" if mode is Mode.DECRYPT else "Encryption"
 
-        if decrypt_mode:
-            effective_input = clean_input(effective_input)
+        if mode is Mode.ENCRYPT and loaded_file.data is None:
+            append_status("Encryption requires a loaded file.", QColor("#ff5555"))
+            return
 
         try:
-            if decrypt_mode:
-                if not is_encrypted_or_compressed(effective_input):
+            if mode is Mode.DECRYPT:
+                data = extract_dbd_payload(data)
+
+                if not is_dbd_payload(data):
                     append_status(
                         "Input is already decrypted or is in an invalid format.",
                         QColor("#ff5555"),
                     )
                     return
 
-                result = decrypter.decrypt(effective_input, selected_version)
-                append_status("Decryption completed successfully.", QColor("#4caf50"))
+                result = decrypter.decrypt(data, key_id)
 
-            else:
-                if is_encrypted_or_compressed(effective_input):
+            else:  # Mode.ENCRYPT
+                if is_dbd_payload(data):
                     append_status(
                         "Input is already encrypted or is in an invalid format.",
                         QColor("#ff5555"),
@@ -365,7 +380,7 @@ def run_gui(access_keys):
                     return
 
                 try:
-                    json.loads(effective_input)
+                    json.loads(data)
                 except json.JSONDecodeError:
                     append_status(
                         "Encryption input must be valid JSON.",
@@ -373,51 +388,46 @@ def run_gui(access_keys):
                     )
                     return
 
-                result = encrypter.encrypt(effective_input, selected_version)
-                append_status("Encryption completed successfully.", QColor("#4caf50"))
-
-            output_text_edit.setPlainText(format_json(result))
-            output_metadata["mode"] = "decrypt" if decrypt_mode else "encrypt"
+                result = encrypter.encrypt(data, key_id)
 
         except Exception as e:
-            if decrypt_mode:
-                append_status(f"Decryption failed: {e}", QColor("#ff5555"))
-            else:
-                append_status(f"Encryption failed: {e}", QColor("#ff5555"))
+            append_status(f"{action} failed: {e}", QColor("#ff5555"))
+            return
 
-        update_ui_state()
+        last_result = pretty_print_json(result)
+        last_run_mode = mode
+        last_run_input_path = loaded_file.file_path
+
+        output_text_edit.setPlainText(last_result)
+
+        append_status(f"{action} completed successfully.", QColor("#4caf50"))
+
+        update_ui()
 
     def on_copy_output():
-        output = output_text_edit.toPlainText().strip()
+        if last_result is None:
+            append_status("No output to copy.", QColor("#ff5555"))
+            return
 
-        if output:
-            QApplication.clipboard().setText(output)
-            append_status("Output copied to clipboard.", QColor("#4caf50"))
+        QApplication.clipboard().setText(last_result)
+        append_status("Output copied to clipboard.", QColor("#4caf50"))
 
     def on_save_output():
-        output = output_text_edit.toPlainText().strip()
-
-        if not output:
+        if last_run_mode is None or last_result is None:
             append_status("No output to save.", QColor("#ff5555"))
             return
 
-        mode = output_metadata.get("mode")
-
-        if mode is None:
-            append_status(
-                'No output is available. Click "Run" first.', QColor("#ff5555")
-            )
-            return
-
         folder = os.path.join(
-            os.getcwd(), "Output", "Decrypted" if mode == "decrypt" else "Encrypted"
+            os.getcwd(),
+            "Output",
+            "Decrypted" if last_run_mode is Mode.DECRYPT else "Encrypted",
         )
 
         os.makedirs(folder, exist_ok=True)
 
         filename = (
-            os.path.basename(loaded_file_content["file_path"])
-            if loaded_file_content.get("file_path")
+            os.path.basename(last_run_input_path)
+            if last_run_input_path
             else datetime.now().strftime("%Y-%m-%dT%H-%M-%S") + ".json"
         )
 
@@ -425,29 +435,29 @@ def run_gui(access_keys):
 
         try:
             with open(save_path, "w", encoding="utf-8") as f:
-                f.write(output)
+                f.write(last_result)
 
             append_status(f"Output saved: {save_path}", QColor("#4caf50"))
 
         except Exception as e:
             append_status(f"Save failed: {e}", QColor("#ff5555"))
 
-    # ---------------------- Signal Connections ----------------------
+    # ----------------- Signals -----------------
     load_file_button.clicked.connect(on_load_file)
     clear_file_button.clicked.connect(on_clear_file)
 
-    decrypt_radio.toggled.connect(on_mode_changed)
-    encrypt_radio.toggled.connect(on_mode_changed)
+    decrypt_radio.toggled.connect(update_ui)
+    encrypt_radio.toggled.connect(update_ui)
 
-    input_text_edit.textChanged.connect(update_ui_state)
+    input_text_edit.textChanged.connect(update_ui)
 
     run_button.clicked.connect(on_run_clicked)
     copy_output_button.clicked.connect(on_copy_output)
     save_output_button.clicked.connect(on_save_output)
 
-    # ---------------------- Initial UI State ----------------------
-    update_ui_state()
-    update_selection_options()
+    # ----------------- Initial UI State  -----------------
+    populate_key_ids()
+    update_ui()
 
     window.show()
     sys.exit(app.exec())
